@@ -4,18 +4,44 @@ use vgtk::lib::gtk::*;
 use vgtk::{gtk, run, Component, UpdateAction, VNode};
 
 #[derive(Clone, Debug)]
+struct Task {
+    text: String,
+    done: bool,
+}
+
+impl Task {
+    fn new(text: impl ToString, done: bool) -> Self {
+        Self {
+            text: text.to_string(),
+            done,
+        }
+    }
+
+    fn render(&self) -> VNode<Model> {
+        gtk! {
+            <ListBoxRow>
+                <Box>
+                    <CheckButton active=self.done />
+                    <Label label=self.text.clone() />
+                </Box>
+            </ListBoxRow>
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 struct Model {
-    tasks: Vec<String>,
+    tasks: Vec<Task>,
 }
 
 impl Default for Model {
     fn default() -> Self {
         Self {
             tasks: vec![
-                "Call Joe".to_string(),
-                "Call Mike".to_string(),
-                "Call Robert".to_string(),
-                "Get Robert to fix the bug".to_string(),
+                Task::new("Call Joe", true),
+                Task::new("Call Mike", true),
+                Task::new("Call Robert", false),
+                Task::new("Get Robert to fix the bug", false),
             ],
         }
     }
@@ -45,11 +71,7 @@ impl Component for Model {
                 <Window border_width=20 on destroy=|_| Message::Exit>
                     <ListBox>
                         {
-                            self.tasks.iter().map(|task| gtk! {
-                                <ListBoxRow>
-                                    <Label label=task.clone() />
-                                </ListBoxRow>
-                            })
+                            self.tasks.iter().map(Task::render)
                         }
                     </ListBox>
                 </Window>
