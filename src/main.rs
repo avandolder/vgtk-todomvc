@@ -3,8 +3,23 @@ use vgtk::lib::gio::ApplicationFlags;
 use vgtk::lib::gtk::*;
 use vgtk::{gtk, run, Component, UpdateAction, VNode};
 
-#[derive(Clone, Debug, Default)]
-struct Model {}
+#[derive(Clone, Debug)]
+struct Model {
+    tasks: Vec<String>,
+}
+
+impl Default for Model {
+    fn default() -> Self {
+        Self {
+            tasks: vec![
+                "Call Joe".to_string(),
+                "Call Mike".to_string(),
+                "Call Robert".to_string(),
+                "Get Robert to fix the bug".to_string(),
+            ],
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 enum Message {
@@ -28,7 +43,15 @@ impl Component for Model {
         gtk! {
             <Application::new_unwrap(Some("com.example.vgtk-todomvc"), ApplicationFlags::empty())>
                 <Window border_width=20 on destroy=|_| Message::Exit>
-                    <Label label="vgtk-todomvc" />
+                    <ListBox>
+                        {
+                            self.tasks.iter().map(|task| gtk! {
+                                <ListBoxRow>
+                                    <Label label=task.clone() />
+                                </ListBoxRow>
+                            })
+                        }
+                    </ListBox>
                 </Window>
             </Application>
         }
