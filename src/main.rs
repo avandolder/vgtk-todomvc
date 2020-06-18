@@ -17,12 +17,23 @@ impl Task {
         }
     }
 
-    fn render(&self) -> VNode<Model> {
+    fn label(&self) -> String {
+        if self.done {
+            format!(
+                "<span strikethrough=\"true\" alpha=\"50%\">{}</span>",
+                self.text
+            )
+        } else {
+            self.text.clone()
+        }
+    }
+
+    fn render(&self, index: usize) -> VNode<Model> {
         gtk! {
             <ListBoxRow>
                 <Box>
-                    <CheckButton active=self.done />
-                    <Label label=self.text.clone() />
+                    <CheckButton active=self.done on toggled=|_| Message::Toggle { index } />
+                    <Label label=self.label() use_markup=true />
                 </Box>
             </ListBoxRow>
         }
@@ -50,6 +61,7 @@ impl Default for Model {
 #[derive(Clone, Debug)]
 enum Message {
     Exit,
+    Toggle { index: usize },
 }
 
 impl Component for Model {
@@ -62,6 +74,10 @@ impl Component for Model {
                 vgtk::quit();
                 UpdateAction::None
             }
+            Message::Toggle { index } => {
+                self.tasks[index].done = !self.tasks[index].done;
+                UpdateAction::Render
+            }
         }
     }
 
@@ -71,7 +87,7 @@ impl Component for Model {
                 <Window border_width=20 on destroy=|_| Message::Exit>
                     <ListBox>
                         {
-                            self.tasks.iter().map(Task::render)
+                            self.tasks.iter().enumerate().map(|(idx, task)| task.render(idx))
                         }
                     </ListBox>
                 </Window>
