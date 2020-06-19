@@ -36,6 +36,9 @@ impl Task {
                 <Box>
                     <CheckButton active=self.done on toggled=|_| Message::Toggle { index } />
                     <Label label=self.label() use_markup=true />
+                    <Button Box::pack_type=PackType::End
+                            relief=ReliefStyle::None image="edit-delete"
+                            on clicked=|_| Message::Delete { index } />
                 </Box>
             </ListBoxRow>
         }
@@ -65,6 +68,7 @@ enum Message {
     Exit,
     Toggle { index: usize },
     Add { task: String },
+    Delete { index: usize },
 }
 
 impl Component for Model {
@@ -83,6 +87,10 @@ impl Component for Model {
             }
             Message::Add { task } => {
                 self.tasks.push(Task::new(task, false));
+                UpdateAction::Render
+            }
+            Message::Delete { index } => {
+                self.tasks.remove(index);
                 UpdateAction::Render
             }
         }
