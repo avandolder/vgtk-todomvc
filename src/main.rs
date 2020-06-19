@@ -45,6 +45,42 @@ impl Task {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct Radio {
+    pub labels: &'static [&'static str],
+    pub active: usize,
+}
+
+#[derive(Clone, Debug)]
+pub enum RadioMessage {}
+
+impl Component for Radio {
+    type Message = RadioMessage;
+    type Properties = Self;
+
+    fn create(props: Self::Properties) -> Self {
+        props
+    }
+
+    fn change(&mut self, props: Self::Properties) -> UpdateAction<Self> {
+        *self = props;
+        UpdateAction::Render
+    }
+
+    fn view(&self) -> VNode<Self> {
+        gtk! {
+            <Box spacing=10>
+                {
+                    self.labels.iter().enumerate().map(|(idx, lbl)| gtk! {
+                        <ToggleButton label={ *lbl }
+                                active={ idx == self.active } />
+                    })
+                }
+            </Box>
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 struct Model {
     tasks: Vec<Task>,
