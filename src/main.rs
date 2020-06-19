@@ -1,3 +1,5 @@
+#![recursion_limit="1024"]
+
 use vgtk::ext::*;
 use vgtk::lib::gio::ApplicationFlags;
 use vgtk::lib::gtk::*;
@@ -62,6 +64,7 @@ impl Default for Model {
 enum Message {
     Exit,
     Toggle { index: usize },
+    Add { task: String },
 }
 
 impl Component for Model {
@@ -78,6 +81,10 @@ impl Component for Model {
                 self.tasks[index].done = !self.tasks[index].done;
                 UpdateAction::Render
             }
+            Message::Add { task } => {
+                self.tasks.push(Task::new(task, false));
+                UpdateAction::Render
+            }
         }
     }
 
@@ -85,11 +92,20 @@ impl Component for Model {
         gtk! {
             <Application::new_unwrap(Some("com.example.vgtk-todomvc"), ApplicationFlags::empty())>
                 <Window border_width=20 on destroy=|_| Message::Exit>
-                    <ListBox>
-                        {
-                            self.tasks.iter().enumerate().map(|(idx, task)| task.render(idx))
-                        }
-                    </ListBox>
+                    <Box orientation=Orientation::Vertical spacing=10>
+                        <Entry placeholder_text="What needs to be done?"
+                            on activate=|entry| {
+                                entry.select_region(0, -1);
+                                Message::Add {
+                                    task: entry.get_text().unwrap().to_string()
+                                }
+                            } />
+                        <ListBox Box::fill=true Box::expand=true>
+                            {
+                                self.tasks.iter().enumerate().map(|(idx, task)| task.render(idx))
+                            }
+                        </ListBox>
+                    </Box>
                 </Window>
             </Application>
         }
