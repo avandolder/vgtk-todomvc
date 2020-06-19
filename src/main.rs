@@ -1,4 +1,4 @@
-#![recursion_limit="1024"]
+#![recursion_limit = "1024"]
 
 use vgtk::ext::*;
 use vgtk::lib::gio::ApplicationFlags;
@@ -91,20 +91,23 @@ impl Component for Model {
     fn view(&self) -> VNode<Model> {
         gtk! {
             <Application::new_unwrap(Some("com.example.vgtk-todomvc"), ApplicationFlags::empty())>
-                <Window border_width=20 on destroy=|_| Message::Exit>
+                <Window default_width=800 default_height=600
+                        border_width=20 on destroy=|_| Message::Exit>
                     <Box orientation=Orientation::Vertical spacing=10>
                         <Entry placeholder_text="What needs to be done?"
-                            on activate=|entry| {
-                                entry.select_region(0, -1);
-                                Message::Add {
-                                    task: entry.get_text().unwrap().to_string()
+                                on activate=|entry| {
+                                    entry.select_region(0, -1);
+                                    Message::Add {
+                                        task: entry.get_text().unwrap().to_string()
+                                    }
+                                } />
+                        <ScrolledWindow Box::fill=true Box::expand=true>
+                            <ListBox selection_mode=SelectionMode::None>
+                                {
+                                    self.tasks.iter().enumerate().map(|(idx, task)| task.render(idx))
                                 }
-                            } />
-                        <ListBox Box::fill=true Box::expand=true>
-                            {
-                                self.tasks.iter().enumerate().map(|(idx, task)| task.render(idx))
-                            }
-                        </ListBox>
+                            </ListBox>
+                        </ScrolledWindow>
                     </Box>
                 </Window>
             </Application>
